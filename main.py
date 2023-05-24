@@ -32,7 +32,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        return 'Registered successfully'
+        return 'inscritpion reussi !'
     else:
         return render_template('signup.html')
 
@@ -47,9 +47,9 @@ def login():
 
         if user:
             session['username'] = user.username
-            return 'Logged in successfully'
+            return 'connexion reussi !'
         else:
-            return 'Invalid credentials'
+            return 'mdp ou username incorrect'
     else:
         return render_template('login.html')
     
@@ -66,7 +66,7 @@ def admin_page():
         users = User.query.all()
         return render_template('admin.html', users=users)
     else:
-        return 'Unauthorized'
+        return 'NOOOOOOOOOOOO'
 
 
 
