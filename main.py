@@ -43,16 +43,34 @@ app.config['SESSION_COOKIE_SECURE'] = True
 # Cela protège les cookies contre les attaques de type cross-site scripting (XSS) où du code malveillant pourrait essayer de voler les cookies via 
 # des scripts côté client.
 app.config['SESSION_COOKIE_HTTPONLY'] = True
+# Définir une expiration appropriée : Configurez la durée de vie des cookies de session en utilisant l'attribut permanent_session_lifetime pour 
+# définir une expiration appropriée. Cela limite la durée de validité des cookies et réduit le risque d'utilisation abusive.
+from datetime import timedelta
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # Exemple : 7 jours
+
 # ---------------------------------------------------------
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
 
 
+# @app.route('/')
+# def index():
+#     # Générer un identifiant de session aléatoire
+#     session['session_id'] = secrets.token_hex(16)
+# ----------------------------------------------------------------------------------------------
+# On peut régénérer périodiquement les ID de session. Cela réduit les risques d'attaque par fixation de session. 
+from flask import session
+
 @app.route('/')
 def index():
-    # Générer un identifiant de session aléatoire
-    session['session_id'] = secrets.token_hex(16)
+    if 'session_id' not in session:
+        session['session_id'] = secrets.token_hex(16)  # Génère un ID de session aléatoire
+    else:
+        # Régénère l'ID de session
+        session.regenerate()
+    return 'Hello, World!'
+# -----------------------------------------------------------------------------------------------
 
 
 class User(db.Model):
