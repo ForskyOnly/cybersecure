@@ -13,6 +13,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
+    hashed_saled_password = db.Column(db.String(128), nullable=False)
+
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -33,7 +35,8 @@ def signup():
         # Salage et hachage du mot de passe avec un sel aléatoire
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
 
-        new_user = User(username=username, password=hashed_password)
+
+        new_user = User(username=username, password=password,hashed_saled_password = hashed_password )
         db.session.add(new_user)
         db.session.commit()
 
@@ -50,15 +53,15 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        if user and check_password_hash(user.password, password):
+        if user and check_password_hash(user.hashed_saled_password, password):
             session['username'] = user.username
             return 'Connexion réussie !'
         else:
             return 'Mot de passe ou nom d\'utilisateur incorrect'
     else:
         return render_template('login.html')
-    
-    
+ 
+
     
 @app.route('/logout')
 def logout():
