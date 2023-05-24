@@ -4,7 +4,7 @@
 
 {% if 'username' in session %}
   <p>Bonjour {{ session['username'] }}</p>
-  <a href="{{ url_for('logout') }}">déconexion</a>
+  <a href="{{ url_for('logout') }}">déconnexion</a>
 {% else %}
   <a href="{{ url_for('login') }}">Connexion</a>
   <a href="{{ url_for('signup') }}">inscritpion</a>

@@ -1,9 +1,26 @@
+from dotenv import load_dotenv
+import os 
 from flask import Flask, request, session, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
+# # Générer une clé secrète aléatoire
+# secret_key = os.urandom(24)
+
+# # Imprimer la clé secrète
+# print(secret_key)
+# Load environment variables from .env file
+load_dotenv()
+# print("SECRET_KEY:", os.getenv("SECRET_KEY"))
+
+
+# Access the secret key
+secret_key = os.getenv('SECRET_KEY')
+
+
+
 app = Flask(__name__)
-app.secret_key = 'super secret key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.secret_key = secret_key
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
 
 
