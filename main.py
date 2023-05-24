@@ -4,29 +4,55 @@ from flask import Flask, request, session, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os 
+import secrets
 
+# app = Flask(__name__)
+# app.secret_key = secrets.token_hex(16)  # Clé secrète pour signer les cookies de session
 
-
+# @app.route('/')
+# def index():
+#     if 'session_id' not in session:
+#         session['session_id'] = secrets.token_hex(16)  # Génère un ID de session aléatoire
+#     return 'Hello, World!'
+    
+# -------------------------------------------------------------------------------------------------------------------------------------
+# Pour assurer la sécurité des cookies de session dans votre application Flask, vous pouvez suivre les bonnes pratiques suivantes :
+# ----------------------------------------------------------------------------------------------------------------------------------------
 # # Générer une clé secrète aléatoire
 # secret_key = os.urandom(24)
 
 # # Imprimer la clé secrète
 # print(secret_key)
+# Puis la sauveguarder dans un fichier .env
+
 # Load environment variables from .env file
 load_dotenv()
 # print("SECRET_KEY:", os.getenv("SECRET_KEY"))
-
 
 # Access the secret key
 secret_key = os.getenv('SECRET_KEY')
 
 
-
-
 app = Flask(__name__)
 app.secret_key = secret_key
+# -------------------------------------------------------
+# Utiliser des cookies sécurisés : Définissez l'attribut secure sur les cookies de session afin qu'ils ne soient envoyés que via des connexions HTTPS 
+# sécurisées. Cela empêche les cookies d'être transmis sur des connexions non sécurisées, réduisant ainsi le risque d'interception par des attaquants.
+app.config['SESSION_COOKIE_SECURE'] = True
+# Utiliser des cookies avec l'attribut HttpOnly : Définissez l'attribut HttpOnly sur les cookies de session pour empêcher l'accès via JavaScript. 
+# Cela protège les cookies contre les attaques de type cross-site scripting (XSS) où du code malveillant pourrait essayer de voler les cookies via 
+# des scripts côté client.
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+# ---------------------------------------------------------
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
+
+
+@app.route('/')
+def index():
+    # Générer un identifiant de session aléatoire
+    session['session_id'] = secrets.token_hex(16)
 
 
 class User(db.Model):
