@@ -1,9 +1,10 @@
 from flask import Flask, request, session, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+import os 
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
 
 
@@ -16,6 +17,12 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -26,7 +33,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        return 'Registered successfully'
+        return 'inscritpion reussi !'
     else:
         return render_template('signup.html')
 
@@ -41,9 +48,9 @@ def login():
 
         if user:
             session['username'] = user.username
-            return 'Logged in successfully'
+            return 'connexion reussi !'
         else:
-            return 'Invalid credentials'
+            return 'mdp ou username incorrect'
     else:
         return render_template('login.html')
     
@@ -60,11 +67,11 @@ def admin_page():
         users = User.query.all()
         return render_template('admin.html', users=users)
     else:
-        return 'Unauthorized'
+        return 'NOOOOOOOOOOOO'
 
 
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  
-    app.run(debug=True)
+    app.run(debug=True , port ='5001')
