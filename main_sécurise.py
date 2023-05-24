@@ -1,8 +1,8 @@
 from flask import Flask, request, session, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import generate_password_hash, check_password_hash
-import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
 import os 
+import hashlib
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
@@ -33,10 +33,11 @@ def signup():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Hachage du mot de passe avec la méthode SHA-256 sans salage
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        # Salage et hachage du mot de passe avec un sel aléatoire
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
 
-        new_user = User(username=username, password=password, hashed_saled_password=hashed_password)
+
+        new_user = User(username=username, password=password,hashed_saled_password = hashed_password )
         db.session.add(new_user)
         db.session.commit()
 
@@ -60,7 +61,6 @@ def login():
             return 'Mot de passe ou nom d\'utilisateur incorrect'
     else:
         return render_template('login.html')
- 
 
     
 @app.route('/logout')
@@ -98,11 +98,9 @@ mots_de_passe = [ 123456,  "password",  123456789, 12345678, 12345, 111111, 1234
 ]
 
 
-
 # Rainbow table (dictionnaire vide)
 rainbow_table = {}
-
-def cherche_mdp(mot_de_passe_hacher):
+def chercher_mdp(mot_de_passe_hacher):
 
     # Boucle pour hacher les mots de passe
     for mot_de_passe in mots_de_passe:
@@ -121,15 +119,13 @@ def cherche_mdp(mot_de_passe_hacher):
     else:
         print("Le mot de passe n'existe pas dans la rainbow table.")
 
-
-
 # Mot de passe à rechercher (haché)
-mot_de_passe_rechercher = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+mot_de_passe_recherche = "pbkdf2:sha256:600000$QiaUirAP$d0e695c2c40523b79090bab219d08a94e569c4d03263ff802fcf25eff121a2ab"
 
 #______________________________________________________________________________________________________________________________
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  
-  #  cherche_mdp(mot_de_passe_rechercher)
+        db.create_all()
+    chercher_mdp(mot_de_passe_recherche)  
     app.run(debug=True , port ='5001')
