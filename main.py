@@ -16,6 +16,12 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+{% if 'username' in session %}
+  <p>Bonjour {{ session['username'] }}</p>
+  <a href="{{ url_for('logout') }}">déconexion</a>
+{% else %}
+  <a href="{{ url_for('login') }}">Connexion</a>
+  <a href="{{ url_for('signup') }}">inscritpion</a>
+{% endif %}
+
+<hr>
+
+</body>
+</html>
