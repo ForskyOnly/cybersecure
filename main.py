@@ -49,7 +49,6 @@ def login():
     
 @app.route('/logout')
 def logout():
-    # remove the username from the session if it's there
     session.pop('username', None)
     return redirect(url_for('login'))
 
@@ -67,5 +66,5 @@ def admin_page():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Create the database
+        db.create_all()  
     app.run(debug=True)
