@@ -20,10 +20,10 @@ import secrets
 # ----------------------------------------------------------------------------------------------------------------------------------------
 # # Générer une clé secrète aléatoire
 # secret_key = os.urandom(24)
-
 # # Imprimer la clé secrète
 # print(secret_key)
 # Puis la sauveguarder dans un fichier .env
+# ------------------------------------------------------------
 
 # Load environment variables from .env file
 load_dotenv()
@@ -53,23 +53,25 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # Exemple : 7 jour
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
 
+# ----------------------------------------------------------------------------------------------------
+@app.route('/')
+def index():
+    # Générer un identifiant de session aléatoire
+    session['session_id'] = secrets.token_hex(16)
+    return 'Session ID generated!'
+
+# ----------------------------------------------------------------------------------------------
+# # On peut régénérer périodiquement les ID de session. Cela réduit les risques d'attaque par fixation de session. 
+# from flask import session
 
 # @app.route('/')
 # def index():
-#     # Générer un identifiant de session aléatoire
-#     session['session_id'] = secrets.token_hex(16)
-# ----------------------------------------------------------------------------------------------
-# On peut régénérer périodiquement les ID de session. Cela réduit les risques d'attaque par fixation de session. 
-from flask import session
-
-@app.route('/')
-def index():
-    if 'session_id' not in session:
-        session['session_id'] = secrets.token_hex(16)  # Génère un ID de session aléatoire
-    else:
-        # Régénère l'ID de session
-        session.regenerate()
-    return 'Hello, World!'
+#     if 'session_id' not in session:
+#         session['session_id'] = secrets.token_hex(16)  # Génère un ID de session aléatoire
+#     else:
+#         # Régénère l'ID de session
+#         session.regenerate()
+#     return 'Hello, World!'
 # -----------------------------------------------------------------------------------------------
 
 
@@ -106,9 +108,31 @@ def signup():
         return render_template('signup.html')
 
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         password = request.form.get('password')
+
+#         user = User.query.filter_by(username=username).first()
+
+#         if user and check_password_hash(user.password, password):
+#             session['username'] = user.username
+#             return 'Connexion réussie !'
+#         else:
+#             return 'Mot de passe ou nom d\'utilisateur incorrect'
+#     else:
+#         return render_template('login.html')
+# ----------------------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        if 'login_attempts' not in session:
+            session['login_attempts'] = 0
+
+        if session['login_attempts'] >= 3:
+            return "Trop de tentatives de connexion. Veuillez réessayer plus tard."
+
         username = request.form.get('username')
         password = request.form.get('password')
 
@@ -116,11 +140,44 @@ def login():
 
         if user and check_password_hash(user.password, password):
             session['username'] = user.username
+            session.pop('login_attempts', None)  # Reset login attempts
             return 'Connexion réussie !'
         else:
+            session['login_attempts'] += 1
             return 'Mot de passe ou nom d\'utilisateur incorrect'
     else:
         return render_template('login.html')
+
+#-----------------------------------------------
+
+
+# from credentials_module import check_credentials
+
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         # Vérifier les informations d'identification
+#         if check_credentials(request.form['username'], request.form['password']):
+#             # Authentification réussie
+#             session.pop('login_attempts', None)  # Réinitialiser les tentatives de connexion
+#             return redirect(url_for('home'))
+#         else:
+#             # Authentification échouée
+#             if 'login_attempts' not in session:
+#                 session['login_attempts'] = 0
+#             session['login_attempts'] += 1
+
+#             if session['login_attempts'] >= 3:
+#                 # Limite atteinte, bloquer l'accès
+#                 return "Trop de tentatives de connexion. Veuillez réessayer plus tard."
+
+#     return '''
+#         <form method="post" action="/login">
+#             <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
+#             <input type="password" name="password" placeholder="Mot de passe" required><br>
+#             <input type="submit" value="Se connecter">
+#         </form>
+#     '''
     
     
     
