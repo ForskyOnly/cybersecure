@@ -1,12 +1,20 @@
 from flask import Flask, request, session, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os 
+from flask_bcrypt import Bcrypt
+
+
+
+
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
-
+limiter = Limiter(app, key_func=lambda: request.remote_addr)
+bcrypt = Bcrypt(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -75,3 +83,32 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()  
     app.run(debug=True)
+
+
+######################################################################################################################################################################
+#                                                                      SECURISÉ
+#######################################################################################################################################################################
+@app.route('/login', methods=['GET', 'POST'])
+@limiter.limit('5/minute')  # Limite à 5 requêtes par minute
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(username=username).first()
+
+        # Ajout d'un hachage de mot de passe
+        if user and bcrypt.check_password_hash(user.password, password):
+            session['username'] = user.username
+            return 'connexion reussi !'
+        else:
+            return 'mdp ou username incorrect'
+    else:
+        return render_template('login.html')
+
+
+
+
+
+
+# hydra -l admin -P /home/apprenant/Documents/01projet_python/DevIA_Roubaix/cybersecure/password.txt -s 5000 -f 127.0.0.1 http-post-form "/login:username=^USER^&password=^PASS^:F=mdp ou username incorrect" -V
