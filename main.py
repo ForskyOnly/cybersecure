@@ -106,8 +106,8 @@ def signup():
         return 'Inscription réussie !'
     else:
         return render_template('signup.html')
-
-
+# -------------------------------------------------------------------------------
+# # Sans limiter le nombre de tentatives de connexion
 # @app.route('/login', methods=['GET', 'POST'])
 # def login():
 #     if request.method == 'POST':
@@ -123,63 +123,39 @@ def signup():
 #             return 'Mot de passe ou nom d\'utilisateur incorrect'
 #     else:
 #         return render_template('login.html')
-# ----------------------------------------------
+# ---------------------------------------------------------------------------------
+# # On peut vérifier le nombre de tentatives de connexion par utilisateur. Si le nombre de tentatives dépasse ou est égal à 3, il renvoie 
+# un message indiquant qu'il y a eu trop de tentatives de connexion.
+login_attempts = {}  # Dictionary to store login attempts count by username
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if 'login_attempts' not in session:
-            session['login_attempts'] = 0
-
-        if session['login_attempts'] >= 3:
-            return "Trop de tentatives de connexion. Veuillez réessayer plus tard."
-
         username = request.form.get('username')
+        
+        # Check if login attempts count exists for the username, initialize to 0 if not
+        if username not in login_attempts:
+            login_attempts[username] = 0
+        
+        if login_attempts[username] >= 3:
+            return "Trop de tentatives de connexion pour l'utilisateur {}. Veuillez réessayer plus tard.".format(username)
+
         password = request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
             session['username'] = user.username
-            session.pop('login_attempts', None)  # Reset login attempts
+            login_attempts.pop(username)  # Reset login attempts for the successful user
             return 'Connexion réussie !'
         else:
-            session['login_attempts'] += 1
+            login_attempts[username] += 1
             return 'Mot de passe ou nom d\'utilisateur incorrect'
     else:
         return render_template('login.html')
-
 #-----------------------------------------------
 
 
-# from credentials_module import check_credentials
-
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'POST':
-#         # Vérifier les informations d'identification
-#         if check_credentials(request.form['username'], request.form['password']):
-#             # Authentification réussie
-#             session.pop('login_attempts', None)  # Réinitialiser les tentatives de connexion
-#             return redirect(url_for('home'))
-#         else:
-#             # Authentification échouée
-#             if 'login_attempts' not in session:
-#                 session['login_attempts'] = 0
-#             session['login_attempts'] += 1
-
-#             if session['login_attempts'] >= 3:
-#                 # Limite atteinte, bloquer l'accès
-#                 return "Trop de tentatives de connexion. Veuillez réessayer plus tard."
-
-#     return '''
-#         <form method="post" action="/login">
-#             <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
-#             <input type="password" name="password" placeholder="Mot de passe" required><br>
-#             <input type="submit" value="Se connecter">
-#         </form>
-#     '''
-    
-    
     
 @app.route('/logout')
 def logout():
