@@ -13,8 +13,6 @@ app = Flask(__name__)
 app.secret_key = 'super secret key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'test.db')
 db = SQLAlchemy(app)
-limiter = Limiter(app, key_func=lambda: request.remote_addr)
-bcrypt = Bcrypt(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -83,28 +81,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()  
     app.run(debug=True)
-
-
-######################################################################################################################################################################
-#                                                                      SECURISÉ
-#######################################################################################################################################################################
-@app.route('/login', methods=['GET', 'POST'])
-@limiter.limit('5/minute')  # Limite à 5 requêtes par minute
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        user = User.query.filter_by(username=username).first()
-
-        # Ajout d'un hachage de mot de passe
-        if user and bcrypt.check_password_hash(user.password, password):
-            session['username'] = user.username
-            return 'connexion reussi !'
-        else:
-            return 'mdp ou username incorrect'
-    else:
-        return render_template('login.html')
 
 
 
