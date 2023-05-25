@@ -14,7 +14,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    hashed_saled_password = db.Column(db.String(128), nullable=False)
+    hashed_password = db.Column(db.String(128), nullable=False)
 
 
     def __repr__(self):
@@ -36,7 +36,7 @@ def signup():
         # Hachage du mot de passe avec la méthode SHA-256 sans salage
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
-        new_user = User(username=username, password=password, hashed_saled_password=hashed_password)
+        new_user = User(username=username, password=password, hashed_password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -53,7 +53,7 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        if user and check_password_hash(user.hashed_saled_password, password):
+        if user and check_password_hash(user.hashed_password, password):
             session['username'] = user.username
             return 'Connexion réussie !'
         else:
@@ -124,12 +124,12 @@ def cherche_mdp(mot_de_passe_hacher):
 
 
 # Mot de passe à rechercher (haché)
-mot_de_passe_rechercher = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+mot_de_passe_rechercher = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92"
 
 #______________________________________________________________________________________________________________________________
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  
-  #  cherche_mdp(mot_de_passe_rechercher)
+    cherche_mdp(mot_de_passe_rechercher)
     app.run(debug=True , port ='5001')
